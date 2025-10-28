@@ -6,7 +6,7 @@ import os
 from datetime import datetime
 
 # ---------- 1. JSON 경로 직접 입력 ----------
-json_path = "keyword/keywords_20251024_154153.json"
+json_path = "keyword/keywords_20251028_130303.json"
 
 if not os.path.exists(json_path):
     raise FileNotFoundError(f"❌ 파일을 찾을 수 없습니다: {json_path}")

@@ -1,0 +1,29 @@
+{
+  "keywords": [
+    {
+      "korean": "아늑한",
+      "english": "cozy"
+    },
+    {
+      "korean": "빈티지한",
+      "english": "vintage"
+    },
+    {
+      "korean": "차분한",
+      "english": "calm"
+    },
+    {
+      "korean": "세련된",
+      "english": "sophisticated"
+    },
+    {
+      "korean": "편안한",
+      "english": "comfortable"
+    }
+  ],
+  "input": {
+    "type": "image",
+    "text": null,
+    "file": "images/test1.png"
+  }
+}
