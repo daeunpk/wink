@@ -1,0 +1,19 @@
+{
+  "source_json": "keyword/keywords_20251028_130303.json",
+  "timestamp": "20251028_130447",
+  "korean_keywords": [
+    "아늑한",
+    "빈티지한",
+    "차분한",
+    "세련된",
+    "편안한"
+  ],
+  "english_keywords": [
+    "cozy",
+    "vintage",
+    "calm",
+    "sophisticated",
+    "comfortable"
+  ],
+  "embedding_path": "embeddings/embedding_20251028_130447.npy"
+}
