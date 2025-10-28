@@ -1,0 +1,29 @@
+{
+  "keywords": [
+    {
+      "korean": "아름다운",
+      "english": "beautiful"
+    },
+    {
+      "korean": "고요한",
+      "english": "serene"
+    },
+    {
+      "korean": "황홀한",
+      "english": "breathtaking"
+    },
+    {
+      "korean": "낭만적인",
+      "english": "romantic"
+    },
+    {
+      "korean": "화려한",
+      "english": "splendid"
+    }
+  ],
+  "input": {
+    "type": "image",
+    "text": null,
+    "file": "/Users/eunjung/Documents/Wink/images/test3.jpg"
+  }
+}
