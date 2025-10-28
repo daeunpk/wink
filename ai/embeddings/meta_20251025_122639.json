@@ -1,0 +1,19 @@
+{
+  "source_json": "keyword/keywords_20251024_154153.json",
+  "timestamp": "20251025_122639",
+  "korean_keywords": [
+    "아름다운",
+    "고요한",
+    "황홀한",
+    "낭만적인",
+    "화려한"
+  ],
+  "english_keywords": [
+    "beautiful",
+    "serene",
+    "breathtaking",
+    "romantic",
+    "splendid"
+  ],
+  "embedding_path": "embeddings/embedding_20251025_122639.npy"
+}
