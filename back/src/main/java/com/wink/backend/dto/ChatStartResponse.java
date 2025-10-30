@@ -1,19 +1,11 @@
-// src/main/java/com/wink/backend/dto/ChatStartResponse.java
+// dto/ChatStartResponse.java
 package com.wink.backend.dto;
-
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-
 import java.time.LocalDateTime;
-
-@Getter
-@Setter
-@AllArgsConstructor
 public class ChatStartResponse {
-    private Long sessionId;
-    private String type;
-    private String topic;
-    private String message;
-    private LocalDateTime timestamp;
+  private Long sessionId; private String type; private String topic; private String message; private LocalDateTime timestamp;
+  public ChatStartResponse(){}
+  public ChatStartResponse(Long id,String type,String topic,String msg,LocalDateTime ts){
+    this.sessionId=id; this.type=type; this.topic=topic; this.message=msg; this.timestamp=ts;
+  }
+  // getters/setters...
 }
