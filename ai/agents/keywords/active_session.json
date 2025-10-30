@@ -1,0 +1,46 @@
+{
+  "session_name": "active_session",
+  "session_start": "2025-10-30 14:49:26",
+  "input_korean": [
+    "화가 날 때 듣는 락 메탈",
+    "조금은 잔잔하게 들을 수 있는 노래",
+    "그거보다 더 신나는 노래"
+  ],
+  "input_image": [
+    "",
+    "",
+    ""
+  ],
+  "english_text_from_agent1": [
+    "angry rock metal",
+    "A song that can be heard softly and gently",
+    "That song is so exciting compared to that."
+  ],
+  "english_caption_from_agent2": [
+    "",
+    "",
+    ""
+  ],
+  "merged_sentence": [
+    "angry rock metal",
+    "A song that can be heard softly and gently",
+    "That song is so exciting compared to that."
+  ],
+  "english_keywords": [
+    [
+      "angry",
+      "rock",
+      "metal"
+    ],
+    [
+      "gentle",
+      "soft",
+      "melodic"
+    ],
+    [
+      "excitement",
+      "energy",
+      "upbeat"
+    ]
+  ]
+}
