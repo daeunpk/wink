@@ -111,7 +111,7 @@ print(processed_df.head())
 
 # --- [수정] 요청하신 경로에 파일 저장 ---
 save_dir = "jamendo/data"
-save_path = os.path.join(save_dir, "processed_X_text.csv")
+save_path = os.path.join(save_dir, "processed_mood_tags.csv")
 
 # 폴더가 없으면 생성
 os.makedirs(save_dir, exist_ok=True)
