@@ -1,22 +1,28 @@
-// entity/AiRecommendationSong.java
 package com.wink.backend.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
-@Entity @Table(name="ai_recommendation_song")
-public class AiRecommendationSong {
-  @Id @GeneratedValue(strategy=GenerationType.IDENTITY)
-  private Long id;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
-  @ManyToOne(fetch=FetchType.LAZY) @JoinColumn(name="rec_id", nullable=false)
-  private AiRecommendation recommendation;
+@Entity
+@Getter @Setter
+public class Playlist {
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-  private Long songId; // nullable
-  @Column(nullable=false) private String title;
-  @Column(nullable=false) private String artist;
-  private String albumCover; private String previewUrl;
-  @Column(name="rank_no", nullable=false) private Integer rankNo;
+    // 어떤 채팅 세션에서 저장한 재생목록인지 (선택)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "session_id")
+    private ChatSession session;
 
-  public AiRecommendationSong(){}
-  // getters/setters ...
+    private String name; // 예: "AI Recommendations"
+
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @OneToMany(mappedBy = "playlist", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PlaylistItem> items = new ArrayList<>();
 }

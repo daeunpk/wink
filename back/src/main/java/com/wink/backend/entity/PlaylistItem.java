@@ -1,21 +1,26 @@
-// entity/PlaylistItem.java
 package com.wink.backend.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
-@Entity @Table(name="playlist_item")
+@Entity
+@Getter @Setter
 public class PlaylistItem {
-  @Id @GeneratedValue(strategy=GenerationType.IDENTITY)
-  private Long id;
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-  @ManyToOne(fetch=FetchType.LAZY) @JoinColumn(name="playlist_id", nullable=false)
-  private Playlist playlist;
+    // 소속 플레이리스트
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "playlist_id")
+    private Playlist playlist;
 
-  @Column(nullable=false) private String songTitle;
-  @Column(nullable=false) private String artist;
-  private String albumCover;
-  @Column(nullable=false) private Integer trackNo;
+    // 노래 기본 정보
+    private Long songId;          // 외부/내부 곡 ID (옵션)
+    private String title;
+    private String artist;
+    private String albumCover;
+    private String previewUrl;
 
-  public PlaylistItem(){}
-  // getters/setters ...
+    private Integer orderNo;      // 재생 순서
 }

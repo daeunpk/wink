@@ -1,9 +1,25 @@
-// dto/AiResponsePayload.java
 package com.wink.backend.dto;
+
+import lombok.Getter;
+import lombok.Setter;
 import java.util.List;
+
+@Getter
+@Setter
 public class AiResponsePayload {
-  public static class Song { public String title; public String artist; public String albumCover; public String previewUrl; public Integer rank; }
-  private Long sessionId; private String topic; private String summary; private List<String> keywords; private List<Song> recommendations;
-  public AiResponsePayload(){}
-  // getters/setters...
+
+    private Long sessionId;          // 세션 ID
+    private String summary;          // 요약된 주제
+    private List<String> keywords;   // 키워드 리스트
+    private List<Song> recommendations; // 추천된 노래 리스트
+
+    @Getter
+    @Setter
+    public static class Song {
+        private String title;       // 노래 제목
+        private String artist;      // 가수 이름
+        private String albumCover;  // 앨범 커버 이미지 URL
+        private String previewUrl;  // 미리듣기 URL
+        private Integer rank;       // 순위 (옵션)
+    }
 }
