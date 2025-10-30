@@ -1,79 +1,87 @@
-# 임베딩 생성 및 저장(일단 평균 앙상블)
+# active_session.json 파일의 영어 키워드에 대한 임베딩 추가
+# MiniLM-L6-v2 모델 사용 (영어 전용)
+
 import json
-import numpy as np
 from sentence_transformers import SentenceTransformer
 import os
 from datetime import datetime
 
-# ---------- 1. JSON 경로 직접 입력 ----------
-json_path = "keyword/keywords_20251028_130303.json"
+# =========================================================
+# 1. 설정
+# =========================================================
+SESSION_JSON_PATH = "agents/keywords/active_session.json"
+EMBEDDING_MODEL_NAME = "all-MiniLM-L6-v2" # 👈 영어 전용 모델만 사용
 
-if not os.path.exists(json_path):
-    raise FileNotFoundError(f"❌ 파일을 찾을 수 없습니다: {json_path}")
+# =========================================================
+# 2. 세션 파일 로드
+# =========================================================
+if not os.path.exists(SESSION_JSON_PATH):
+    print(f"❌ 세션 파일({SESSION_JSON_PATH})이 없습니다. agent3_keywordExtractor.py 먼저 실행하세요.")
+    exit()
 
-with open(json_path, encoding="utf-8") as f:
-    data = json.load(f)
+print(f"🔄 Loading session file: {SESSION_JSON_PATH}")
+with open(SESSION_JSON_PATH, "r", encoding="utf-8") as f:
+    session_data = json.load(f)
 
-# ---------- 2. 키워드 읽기 ----------
-korean_words = [kw["korean"] for kw in data.get("keywords", [])]
-english_words = [kw["english"] for kw in data.get("keywords", [])]
+# =========================================================
+# 3. 임베딩 모델 로드
+# =========================================================
+print(f"🚀 Loading embedding model ({EMBEDDING_MODEL_NAME})...")
+try:
+    model_en = SentenceTransformer(EMBEDDING_MODEL_NAME)
+    print("✅ Model loaded.")
+except Exception as e:
+    print(f"❌ Failed to load model: {e}")
+    exit()
 
-if not korean_words or not english_words:
-    raise ValueError("❌ JSON 파일에서 'keywords' 키를 찾을 수 없습니다.")
+# =========================================================
+# 4. 각 턴(Turn)별 키워드 임베딩 생성
+# =========================================================
+print("💬 Processing English keywords for embedding...")
 
-print(f"\n📝 불러온 키워드 파일: {json_path}")
-print(f"한국어 키워드: {korean_words}")
-print(f"영어 키워드: {english_words}")
+# 기존 임베딩이 있으면 가져오고, 없으면 빈 리스트로 시작
+all_embeddings = session_data.get("english_keyword_embeddings", [])
+processed_count = 0
 
-# ---------- 3. 모델 로드 ----------
-print("\n🚀 임베딩 모델 로드 중...")
-model_en = SentenceTransformer("all-MiniLM-L6-v2")              # 영어용
-model_ko = SentenceTransformer("jhgan/ko-sroberta-multitask")  # 한국어용
+# english_keywords 리스트를 순회 (각 요소가 한 턴의 키워드 리스트)
+for i, keywords_list in enumerate(session_data.get("english_keywords", [])):
+    
+    # [핵심] 👈 이미 해당 턴(i)의 임베딩이 존재하면 건너뛰기
+    if i < len(all_embeddings) and all_embeddings[i]:
+        continue 
+        
+    if not keywords_list: # 키워드가 없는 턴은 빈 리스트 추가
+        if i >= len(all_embeddings):
+             all_embeddings.append([])
+        continue
 
-# ---------- 4. 임베딩 생성 ----------
-# 한국어와 영어 키워드를 하나로 합칩니다.
-all_keywords_text = " ".join(korean_words + english_words)
-# 예: "행복한 신나는 happy exciting"
+    # 1. 키워드 리스트를 하나의 문자열로 합침 (예: "cozy winter peaceful")
+    keywords_text = " ".join(keywords_list)
+    print(f"   -> Turn {i+1}: Embedding '{keywords_text}'")
+    
+    # 2. 영어 모델로 임베딩 생성 (NumPy 배열)
+    embedding_vector_np = model_en.encode([keywords_text])[0]
+    
+    # 3. JSON 저장을 위해 NumPy 배열을 Python 리스트로 변환
+    embedding_vector_list = embedding_vector_np.tolist()
+    
+    # 4. 결과 리스트에 추가 (또는 기존 빈 리스트 업데이트)
+    if i >= len(all_embeddings):
+        all_embeddings.append(embedding_vector_list)
+    else:
+        all_embeddings[i] = embedding_vector_list # (이전 턴 처리 실패 시 덮어쓰기)
+        
+    processed_count += 1
 
-print(f"앙상블용 통합 텍스트: {all_keywords_text}")
-
-# "하나의 텍스트"를 두 모델에 모두 입력합니다.
-emb_en = model_en.encode([all_keywords_text]) # (1, 384)
-emb_ko = model_ko.encode([all_keywords_text]) # (1, 768)
-
-# 차원 맞추기 위해 zero padding (KoBERT:768 기준)
-if emb_en.shape[1] != emb_ko.shape[1]:
-    max_dim = max(emb_en.shape[1], emb_ko.shape[1]) # 768
-    padded_en = np.pad(emb_en, ((0, 0), (0, max_dim - emb_en.shape[1])))
-    padded_ko = np.pad(emb_ko, ((0, 0), (0, max_dim - emb_ko.shape[1])))
+# =========================================================
+# 5. 세션 파일 업데이트 (임베딩 추가/덮어쓰기)
+# =========================================================
+if processed_count > 0:
+    session_data["english_keyword_embeddings"] = all_embeddings
+    
+    print(f"\n💾 Updating session file with {processed_count} new embedding(s)...")
+    with open(SESSION_JSON_PATH, "w", encoding="utf-8") as f:
+        json.dump(session_data, f, ensure_ascii=False, indent=2)
+    print(f"✅ Session file updated: {SESSION_JSON_PATH}")
 else:
-    padded_en, padded_ko = emb_en, emb_ko
-
-# 평균 앙상블
-emb_concat = (padded_en + padded_ko) / 2
-
-# ---------- 5. 저장 ----------
-timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-os.makedirs("embeddings", exist_ok=True)
-save_path = f"embeddings/embedding_{timestamp}.npy"
-np.save(save_path, emb_concat)
-
-# ---------- 6. 메타 정보 저장 ----------
-meta = {
-    "source_json": json_path,
-    "timestamp": timestamp,
-    "korean_keywords": korean_words,
-    "english_keywords": english_words,
-    "embedding_path": save_path
-}
-
-meta_path = f"embeddings/meta_{timestamp}.json"
-with open(meta_path, "w", encoding="utf-8") as f:
-    json.dump(meta, f, ensure_ascii=False, indent=2)
-
-print(f"\n✅ 임베딩 저장 완료 → {save_path}")
-print(f"🧾 메타 정보 저장 완료 → {meta_path}")
-
-
-SAVE_DIR = "embeddings"
-os.makedirs(SAVE_DIR, exist_ok=True)
+    print("\n✅ No new keywords to embed. Session file is up-to-date.")
