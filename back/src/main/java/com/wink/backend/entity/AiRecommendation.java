@@ -1,9 +1,14 @@
 // entity/AiRecommendation.java
 package com.wink.backend.entity;
+import lombok.Getter;
+import lombok.Setter;
+
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+@Getter
+@Setter
 @Entity @Table(name="ai_recommendation")
 public class AiRecommendation {
   @Id @GeneratedValue(strategy=GenerationType.IDENTITY)

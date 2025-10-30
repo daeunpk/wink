@@ -1,83 +1,102 @@
-// service/ChatService.java
 package com.wink.backend.service;
 
-import com.wink.backend.dto.*;
+import com.wink.backend.dto.AiResponsePayload;
+import com.wink.backend.dto.ChatStartMyRequest;
+import com.wink.backend.dto.ChatStartSpaceRequest;
 import com.wink.backend.entity.*;
 import com.wink.backend.repository.*;
+import com.wink.backend.util.JsonUtil;
 import org.springframework.stereotype.Service;
+import lombok.RequiredArgsConstructor;
+
 import java.time.LocalDateTime;
 
 @Service
+@RequiredArgsConstructor
 public class ChatService {
 
-  private final ChatSessionRepository sessionRepo;
-  private final SessionContextRepository ctxRepo;
-  private final ChatMessageRepository msgRepo;
-  private final AiRecommendationRepository recRepo;
-  private final AiRecommendationSongRepository recSongRepo;
-  private final TopicGenerator topicGen;
+    private final ChatSessionRepository sessionRepo;
+    private final ChatMessageRepository messageRepo;
+    private final SessionContextRepository contextRepo;
+    private final AiRecommendationRepository recRepo;
+    private final AiRecommendationSongRepository recSongRepo;
 
-  public ChatService(ChatSessionRepository s, SessionContextRepository c, ChatMessageRepository m,
-                     AiRecommendationRepository r, AiRecommendationSongRepository rs, TopicGenerator t) {
-    this.sessionRepo = s; this.ctxRepo = c; this.msgRepo = m; this.recRepo = r; this.recSongRepo = rs; this.topicGen = t;
-  }
+    private final TopicGenerator topicGen = new TopicGenerator();
 
-  public ChatStartResponse startMy(ChatStartMyRequest req){
-    String topic = topicGen.fromText(req.getText());
-    ChatSession sess = new ChatSession();
-    sess.setType("MY"); sess.setTopic(topic); sess.setCreatedAt(LocalDateTime.now());
-    sessionRepo.save(sess);
+    /**
+     * 나의 순간 새 채팅 시작
+     */
+    public ChatSession startMy(ChatStartMyRequest req) {
+        String topic = topicGen.fromText(req.getText());
+        ChatSession session = new ChatSession();
+        session.setType("MY");
+        session.setTopic(topic);
+        session.setCreatedAt(LocalDateTime.now());
+        sessionRepo.save(session);
 
-    if (req.getText()!=null) {
-      ChatMessage m = new ChatMessage();
-      m.setSession(sess); m.setSender("user"); m.setText(req.getText()); m.setImageUrl(req.getImageUrl());
-      msgRepo.save(m);
+        ChatMessage msg = new ChatMessage();
+        msg.setSession(session);
+        msg.setSender("user");
+        msg.setText(req.getText());
+        msg.setCreatedAt(LocalDateTime.now());
+        messageRepo.save(msg);
+
+        return session;
     }
-    return new ChatStartResponse(sess.getId(), "MY", topic, "Session created with AI-generated topic.", LocalDateTime.now());
-  }
 
-  public ChatStartResponse startSpace(ChatStartSpaceRequest req){
-    String topic = topicGen.fromText("space:" + (req.getLocation()!=null?req.getLocation().placeName:""));
-    ChatSession sess = new ChatSession();
-    sess.setType("SPACE"); sess.setTopic(topic); sess.setCreatedAt(LocalDateTime.now());
-    sessionRepo.save(sess);
+    /**
+     * 공간의 순간 새 채팅 시작
+     */
+    public ChatSession startSpace(ChatStartSpaceRequest req) {
+        String topic = topicGen.fromText("space:" +
+                (req.getLocation() != null ? req.getLocation().getPlaceName() : ""));
 
-    SessionContext ctx = new SessionContext();
-    ctx.setSession(sess);
-    if (req.getLocation()!=null){ ctx.setLat(req.getLocation().latitude); ctx.setLng(req.getLocation().longitude);
-      ctx.setAddress(req.getLocation().address); ctx.setPlaceName(req.getLocation().placeName);}
-    ctx.setImageUrl(req.getSpaceImageUrl());
-    ctxRepo.save(ctx);
+        ChatSession session = new ChatSession();
+        session.setType("SPACE");
+        session.setTopic(topic);
+        session.setCreatedAt(LocalDateTime.now());
+        sessionRepo.save(session);
 
-    return new ChatStartResponse(sess.getId(), "SPACE", topic, "Space session created.", LocalDateTime.now());
-  }
+        SessionContext ctx = new SessionContext();
+        ctx.setSession(session);
+        if (req.getLocation() != null) {
+            ctx.setLat(req.getLocation().getLatitude());
+            ctx.setLng(req.getLocation().getLongitude());
+            ctx.setAddress(req.getLocation().getAddress());
+            ctx.setPlaceName(req.getLocation().getPlaceName());
+        }
+        ctx.setImageUrl(req.getSpaceImageUrl());
+        contextRepo.save(ctx);
 
-  /** AI 응답 저장 (요약/키워드/추천곡) */
-  public AiResponsePayload saveAiResponse(AiResponsePayload payload){
-    ChatSession sess = sessionRepo.findById(payload.getSessionId()).orElseThrow();
-    // upsert recommendation
-    AiRecommendation rec = recRepo.findBySession_Id(sess.getId());
-    if (rec==null) rec = new AiRecommendation();
-    rec.setSession(sess);
-    rec.setSummary(payload.getSummary());
-    rec.setKeywordsJson(JsonUtil.toJson(payload.getKeywords())); // 아래 유틸 사용
-    rec.setCreatedAt(LocalDateTime.now());
-    recRepo.save(rec);
-
-    // 기존 곡 제거 후 재삽입(단순화)
-    recSongRepo.findAll().stream().filter(x -> x.getRecommendation().getId().equals(rec.getId()))
-      .forEach(x -> recSongRepo.deleteById(x.getId()));
-    if (payload.getRecommendations()!=null){
-      int rank=1;
-      for (AiResponsePayload.Song s : payload.getRecommendations()){
-        AiRecommendationSong rs = new AiRecommendationSong();
-        rs.setRecommendation(rec); rs.setSongId(null);
-        rs.setTitle(s.title); rs.setArtist(s.artist);
-        rs.setAlbumCover(s.albumCover); rs.setPreviewUrl(s.previewUrl);
-        rs.setRankNo(s.rank!=null?s.rank:rank++);
-        recSongRepo.save(rs);
-      }
+        return session;
     }
-    return payload;
-  }
+
+    /**
+     * AI 응답 저장
+     */
+    public void saveAiResponse(AiResponsePayload payload) {
+        ChatSession session = sessionRepo.findById(payload.getSessionId())
+                .orElseThrow(() -> new RuntimeException("Session not found"));
+
+        AiRecommendation rec = new AiRecommendation();
+        rec.setSession(session);
+        rec.setSummary(payload.getSummary());
+        rec.setKeywordsJson(JsonUtil.toJson(payload.getKeywords()));
+        rec.setCreatedAt(LocalDateTime.now());
+        recRepo.save(rec);
+
+        int rank = 1;
+        if (payload.getRecommendations() != null) {
+            for (AiResponsePayload.Song s : payload.getRecommendations()) {
+                AiRecommendationSong rs = new AiRecommendationSong();
+                rs.setRecommendation(rec);
+                rs.setTitle(s.getTitle());
+                rs.setArtist(s.getArtist());
+                rs.setAlbumCover(s.getAlbumCover());
+                rs.setPreviewUrl(s.getPreviewUrl());
+                rs.setRankNo(s.getRank() != null ? s.getRank() : rank++);
+                recSongRepo.save(rs);
+            }
+        }
+    }
 }

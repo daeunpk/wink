@@ -1,20 +1,26 @@
-// entity/SessionContext.java
 package com.wink.backend.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+import java.time.LocalDateTime;
 
-@Entity @Table(name="session_context")
+@Entity
+@Getter
+@Setter
 public class SessionContext {
-  @Id @GeneratedValue(strategy=GenerationType.IDENTITY)
-  private Long id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-  @OneToOne @JoinColumn(name="session_id", nullable=false, unique=true)
-  private ChatSession session;
+    @OneToOne
+    private ChatSession session;
 
-  private String imageUrl;
-  private Double lat; private Double lng;
-  private String address; private String placeName;
+    private Double lat;
+    private Double lng;
+    private String address;
+    private String placeName;
+    private String imageUrl;
 
-  public SessionContext(){}
-  // getters/setters ...
+    private LocalDateTime createdAt = LocalDateTime.now();
 }

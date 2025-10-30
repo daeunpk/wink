@@ -1,13 +1,9 @@
-// service/TopicGenerator.java
 package com.wink.backend.service;
-import org.springframework.stereotype.Component;
 
-@Component
 public class TopicGenerator {
-  public String fromText(String text) {
-    if (text == null || text.isBlank()) return "Untitled Chat";
-    if (text.contains("비")) return "Rainy Night Jazz";
-    if (text.contains("산책")) return "Chill Walk Mood";
-    return "Mood-based Chat";
-  }
+    public String fromText(String input) {
+        // 실제로는 AI 호출, 지금은 단순 문자열 처리
+        if (input == null || input.isBlank()) return "Untitled";
+        return input.length() > 20 ? input.substring(0, 20) + "..." : input;
+    }
 }
