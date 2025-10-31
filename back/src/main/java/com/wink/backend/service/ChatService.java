@@ -158,6 +158,9 @@ public class ChatService {
                         mapper.getTypeFactory().constructCollectionType(List.class, String.class)
                 );
 
+                keywords = geminiService.translateKeywords(keywords);
+
+
                 List<AiResponseResponse.Recommendation> recs = new ArrayList<>();
                 for (JsonNode songNode : root.path("recommendations")) {
                     recs.add(AiResponseResponse.Recommendation.builder()
