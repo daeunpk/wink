@@ -15,9 +15,6 @@ import json
 import base64
 from datetime import datetime
 import requests
-# import torch
-# from transformers import AutoModelForCausalLM, AutoTokenizer
-# from rag_recommender import recommend_song_based_on_context
 
 # agent1 import
 try:
@@ -38,6 +35,13 @@ try:
     from context_manager import get_full_conversation_history
 except ImportError:
     print("❌ 'agents/context_manager.py' 파일을 찾을 수 없습니다.")
+    exit()
+    
+# rag retriever import
+try:
+    from rag_retriever import get_song_recommendations
+except ImportError:
+    print("❌ 'rag/rag_retriever.py' 파일을 찾을 수 없습니다.")
     exit()
     
 # =========================================================
@@ -110,8 +114,10 @@ def extract_keywords(merged_text: str, k: int = 3) -> list[str]:
     print("💬 [Agent 3] Extracting mood keywords (Ollama w/ JSON)...")
 
     prompt_content = f"""
-From the text below, extract exactly {k} keywords that **best describe and are most relevant to** the core mood, atmosphere, or genre.
-Text:
+The text below is a user's request for music. 
+    **Analyze the user's intent** and **generate {k} keywords** that describe the mood, atmosphere, or genre they are looking for.
+    
+    Text:
 "{merged_text}"
 """
     system_prompt = """
@@ -165,7 +171,8 @@ def save_to_session_simple(data: dict, session_file: str):
         "session_start": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "input_korean": [], "input_image": [],
         "english_text_from_agent1": [], "english_caption_from_agent2": [],
-        "merged_sentence": [], "english_keywords": []
+        "merged_sentence": [], "english_keywords": [],
+        "recommended_songs": []
     }
     
     if os.path.exists(session_file):
@@ -188,7 +195,7 @@ def save_to_session_simple(data: dict, session_file: str):
         session_data["english_caption_from_agent2"].append(data["english_caption_from_agent2"])
         session_data["merged_sentence"].append(data["merged_sentence"])
         session_data["english_keywords"].append(data["english_keywords"])
-        # session_data["korean_keywords"].append(data["korean_keywords"])
+        session_data["recommended_songs"].append(data["recommended_songs"])
     except KeyError as e:
         print(f"🔥 데이터 저장 중 치명적인 Key Error 발생: {e}")
         return
@@ -213,9 +220,12 @@ def run_agent_pipeline(korean_text="", image_path="") -> dict:
     # [Agent 2]
     english_caption = image_to_english_caption(image_path) if image_path else ""
     # [Agent 3-1]
-    merged = rewrite_combined_sentence(english_text, english_caption, full_history)    # [Agent 3-2]
+    merged = rewrite_combined_sentence(english_text, english_caption, full_history)
     # [Agent 3-2]: 영어 키워드 추출
     eng_keywords = extract_keywords(merged, k=3)
+    
+    # RAG 검색 (노래 추천) ---
+    recommended_songs = get_song_recommendations(eng_keywords, top_k=5)
     
     session_file_path = os.path.join(SAVE_DIR, "active_session.json")
 
@@ -226,6 +236,7 @@ def run_agent_pipeline(korean_text="", image_path="") -> dict:
         "english_caption_from_agent2": english_caption,
         "merged_sentence": merged,
         "english_keywords": eng_keywords,
+        "recommended_songs": recommended_songs,
     }
 
     session_file_path = os.path.join(SAVE_DIR, "active_session.json")
