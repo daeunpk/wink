@@ -1,31 +1,27 @@
 package com.wink.backend.dto;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 import java.util.List;
 
-@Getter
-@Setter
+@Data
 public class ChatStartSpaceRequest {
+    private String imageUrl;
 
-    private String spaceImageUrl;           // 지도나 배경 이미지 URL
-    private Location location;              // 위치 정보
-    private List<MusicInfo> nearbyMusic;    // 주변 음악 리스트
+    private Location location;
+    private List<NearbyMusic> nearbyMusic;
 
-    @Getter
-    @Setter
+    @Data
     public static class Location {
-        private double latitude;     // 위도
-        private double longitude;    // 경도
-        private String address;      // 주소
-        private String placeName;    // 장소명
+        private double lat;
+        private double lng;
+        private String address;
+        private String placeName;
     }
 
-    @Getter
-    @Setter
-    public static class MusicInfo {
-        private Long songId;         // 음악 ID
-        private String title;        // 제목
-        private String artist;       // 아티스트
+    @Data
+    public static class NearbyMusic {
+        private Long songId;
+        private String title;
+        private String artist;
     }
 }
