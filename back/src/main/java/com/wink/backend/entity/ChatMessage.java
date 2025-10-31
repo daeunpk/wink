@@ -1,28 +1,47 @@
-// entity/ChatMessage.java
 package com.wink.backend.entity;
 
 import jakarta.persistence.*;
+import lombok.*;
 import java.time.LocalDateTime;
 
-@Entity @Table(name="chat_message")
+@Entity
+@Table(name = "chat_message")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ChatMessage {
-  @Id @GeneratedValue(strategy=GenerationType.IDENTITY)
-  private Long id;
 
-  @ManyToOne(fetch=FetchType.LAZY) @JoinColumn(name="session_id", nullable=false)
-  private ChatSession session;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-  @Column(nullable=false, length=10) private String sender; // user/ai
-  @Column(columnDefinition="TEXT") private String text;
-  private String imageUrl;
-  @Column(nullable=false) private LocalDateTime createdAt = LocalDateTime.now();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "session_id", nullable = false)
+    private ChatSession session;
 
-  public ChatMessage() {}
-  // getters/setters ...
-  public Long getId(){return id;} public void setId(Long id){this.id=id;}
-  public ChatSession getSession(){return session;} public void setSession(ChatSession s){this.session=s;}
-  public String getSender(){return sender;} public void setSender(String s){this.sender=s;}
-  public String getText(){return text;} public void setText(String t){this.text=t;}
-  public String getImageUrl(){return imageUrl;} public void setImageUrl(String i){this.imageUrl=i;}
-  public LocalDateTime getCreatedAt(){return createdAt;} public void setCreatedAt(LocalDateTime t){this.createdAt=t;}
+    @Column(nullable = false, length = 10)
+    private String sender; // user / ai
+
+    @Column(columnDefinition = "TEXT")
+    private String text;
+
+    private String imageUrl;
+
+    // ✅ AI 추천 관련 확장 필드 (옵션)
+    @Lob
+    private String keywordsJson;  // ["calm", "sentimental", "earthytone"]
+
+    @Lob
+    private String recommendationsJson; // 추천곡 JSON 배열 전체 문자열
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @PrePersist
+    public void onCreate() {
+        if (createdAt == null)
+            createdAt = LocalDateTime.now();
+    }
 }
