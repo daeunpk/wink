@@ -10,7 +10,11 @@ from urllib.parse import urlencode
 CLIENT_ID = "9f601ae991474c5f9acbbca99f0d9c7c"
 CLIENT_SECRET = "302529b448714aaabc311bdb65772a96"
 REDIRECT_URI = "http://127.0.0.1:8888/callback"
-SCOPE = "user-read-private user-read-email user-read-playback-state user-modify-playback-state"
+SCOPE = (
+    "user-read-email user-read-private "
+    "user-library-read user-read-playback-position "
+    "user-read-recently-played user-read-playback-state"
+)
 
 app = Flask(__name__)
 
