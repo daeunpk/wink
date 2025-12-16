@@ -109,6 +109,7 @@ const ChatInput = styled.div`
    & input {
     border: none;
     outline: none;
+    padding-right: 10px;
   }
 `
 
