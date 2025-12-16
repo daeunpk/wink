@@ -45,11 +45,11 @@ export default function NearBy () {
   const currentLng = 126.967111;
 
   const FIXED_POSITIONS = [
-  { top: "160px", left: "56%" },
-  { top: "230px", left: "80%" },
-  { top: "400px", left: "10%" },
-  { top: "300px", left: "92%" },
-  { top: "700px", left: "50%" },
+  { top: "175px", left: "32%" },
+  { top: "210px", left: "80%" },
+  { top: "420px", left: "10%" },
+  { top: "400px", left: "86%" },
+  { top: "580px", left: "24%" },
 ];
   // ---- 가라데이터(Mock) ----
 
@@ -175,7 +175,7 @@ if (loading) return <div>로딩 중...</div>;
           </FindMusicBtn>
         </Header>
         <NearByContent onClick={resetSelection}>
-          <MyLoc top="57%" left="47%"></MyLoc>
+          <MyLoc top="50%" left="50%"></MyLoc>
           {users.map((user, index) => {
             const pos = FIXED_POSITIONS[index];
 

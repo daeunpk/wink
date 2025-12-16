@@ -1,0 +1,23 @@
+{
+  "timestamp": "2025-12-16 17:50:46",
+  "input_location": null,
+  "input_image": "/Users/eunjung/Desktop/wink/ai/images/snow.JPG",
+  "english_caption_from_agent2": "",
+  "english_keywords": [],
+  "recommended_songs": [
+    {
+      "artist_name": "Akashic Records",
+      "url": "http://www.jamendo.com/track/1048228",
+      "mood_tags": "advertising commercial inspiring motivational",
+      "track_name": "Acoustic",
+      "path": "28/1048228.mp3",
+      "track_id": "track_1048228",
+      "instrument_tags": "ukulele",
+      "releasedate": "2013-07-16",
+      "genre_tags": "easylistening",
+      "album_name": "Advertising",
+      "duration": 200.0,
+      "similarity_score": NaN
+    }
+  ]
+}
